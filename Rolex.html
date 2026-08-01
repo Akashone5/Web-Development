@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clock • Timer • Stopwatch</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(-45deg, #ff9966, #1206f294, #d56809, #ff0033);
+            background-size: 400% 400%;
+            animation: gradient 12s ease infinite;
+            overflow: hidden;
+        }
+
+        @keyframes gradient {
+            0% {
+                background-position: 0% 50%;
+            }
+
+            50% {
+                background-position: 100% 50%;
+            }
+
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            width: 90%;
+            max-width: 1100px;
+        }
+
+        .card {
+            backdrop-filter: blur(18px);
+            background: rgba(255, 255, 255, .15);
+            border: 1px solid rgba(255, 255, 255, .25);
+            border-radius: 22px;
+            padding: 28px;
+            text-align: center;
+            color: white;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, .25);
+            transition: .35s;
+            cursor: pointer;
+        }
+
+        .card:hover {
+            transform: translateY(-8px) scale(1.03);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, .35);
+        }
+
+        h2 {
+            margin-bottom: 20px;
+        }
+
+        .display {
+            font-size: 2.2rem;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+
+        .small {
+            opacity: .8;
+        }
+
+        button {
+            padding: 10px 18px;
+            margin: 6px;
+            border: none;
+            border-radius: 12px;
+            color: white;
+            cursor: pointer;
+        }
+
+        .start {
+            background: #fb8c00;
+        }
+
+        .stop {
+            background: #e53935;
+        }
+
+        .reset {
+            background: #ff7043;
+        }
+
+        .set {
+            background: #ff9800;
+        }
+
+        input {
+            width: 70px;
+            padding: 8px;
+            border: none;
+            border-radius: 10px;
+            text-align: center;
+            margin: 5px;
+        }
+
+        .footer {
+            position: fixed;
+            bottom: 15px;
+            color: white;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- HOME -->
+    <div id="home" class="container">
+
+        <div class="card" onclick="openTool('clock')">
+            <h2>🕒 Live Clock</h2>
+            <p>Click to Open</p>
+        </div>
+
+        <div class="card" onclick="openTool('stopwatch')">
+            <h2>⏱ Stopwatch</h2>
+            <p>Click to Open</p>
+        </div>
+
+        <div class="card" onclick="openTool('timer')">
+            <h2>⏳ Timer</h2>
+            <p>Click to Open</p>
+        </div>
+
+    </div>
+
+    <!-- CLOCK -->
+    <div id="clockPage" class="hidden">
+        <div class="card">
+            <h2>🕒 Live Clock</h2>
+            <div class="display" id="clock">00:00:00</div>
+            <div class="small" id="date"></div>
+        </div>
+    </div>
+
+    <!-- STOPWATCH -->
+    <div id="stopwatchPage" class="hidden">
+        <div class="card">
+            <h2>⏱ Stopwatch</h2>
+            <div class="display" id="stopwatch">00:00:00</div>
+
+            <button class="start" onclick="startSW()">Start</button>
+            <button class="stop" onclick="stopSW()">Pause</button>
+            <button class="reset" onclick="resetSW()">Reset</button>
+        </div>
+    </div>
+
+    <!-- TIMER -->
+    <div id="timerPage" class="hidden">
+        <div class="card">
+            <h2>⏳ Timer</h2>
+
+            <input type="number" id="minutes" placeholder="Min">
+            <input type="number" id="seconds" placeholder="Sec">
+
+            <div class="display" id="timer">00:00</div>
+
+            <button class="set" onclick="startTimer()">Start</button>
+            <button class="stop" onclick="stopTimer()">Stop</button>
+            <button class="reset" onclick="resetTimer()">Reset</button>
+        </div>
+    </div>
+
+    <div class="footer">
+        Made with ❤️ using Love and code
+    </div>
+
+    <script>
+
+        function openTool(tool) {
+            window.open(window.location.pathname + "#" + tool, "_blank");
+        }
+
+        const hash = location.hash.replace("#", "");
+
+        if (hash) {
+            document.getElementById("home").style.display = "none";
+
+            if (hash === "clock")
+                document.getElementById("clockPage").classList.remove("hidden");
+
+            if (hash === "stopwatch")
+                document.getElementById("stopwatchPage").classList.remove("hidden");
+
+            if (hash === "timer")
+                document.getElementById("timerPage").classList.remove("hidden");
+        }
+
+        // CLOCK
+        function updateClock() {
+            const now = new Date();
+            if (document.getElementById("clock")) {
+                document.getElementById("clock").innerHTML = now.toLocaleTimeString();
+                document.getElementById("date").innerHTML = now.toDateString();
+            }
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        // STOPWATCH
+        let sw = 0, swInt = null;
+
+        function format(x) {
+            let h = Math.floor(x / 3600);
+            let m = Math.floor((x % 3600) / 60);
+            let s = x % 60;
+            return String(h).padStart(2, "0") + ":" +
+                String(m).padStart(2, "0") + ":" +
+                String(s).padStart(2, "0");
+        }
+
+        function startSW() {
+            if (swInt) return;
+            swInt = setInterval(() => {
+                sw++;
+                document.getElementById("stopwatch").innerHTML = format(sw);
+            }, 1000);
+        }
+
+        function stopSW() {
+            clearInterval(swInt);
+            swInt = null;
+        }
+
+        function resetSW() {
+            stopSW();
+            sw = 0;
+            document.getElementById("stopwatch").innerHTML = "00:00:00";
+        }
+
+
+        let total = 0, tInt;
+
+        function startTimer() {
+
+            if (total <= 0) {
+                let m = parseInt(minutes.value) || 0;
+                let s = parseInt(seconds.value) || 0;
+                total = m * 60 + s;
+            }
+
+            clearInterval(tInt);
+
+            tInt = setInterval(() => {
+
+                if (total <= 0) {
+                    clearInterval(tInt);
+                    timer.innerHTML = "00:00";
+                    alert("⏰ Time's Up!");
+                    return;
+                }
+
+                total--;
+
+                timer.innerHTML =
+                    String(Math.floor(total / 60)).padStart(2, "0") + ":" +
+                    String(total % 60).padStart(2, "0");
+
+            }, 1000);
+
+        }
+
+        function stopTimer() {
+            clearInterval(tInt);
+        }
+
+        function resetTimer() {
+            clearInterval(tInt);
+            total = 0;
+            timer.innerHTML = "00:00";
+            minutes.value = "";
+            seconds.value = "";
+        }
+
+    </script>
+
+</body>
+
+</html>
